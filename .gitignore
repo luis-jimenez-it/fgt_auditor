@@ -1,0 +1,23 @@
+
+# Entorno virtual
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Credenciales
+.env
+.env.*
+!.env.example
+
+# Archivos temporales y logs
+*.log
+logs/
+tmp/
+temp/
+
+# Git y editores
+.git/
+.vscode/
+.idea/
+.DS_Store

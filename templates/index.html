@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FortiGate Hardening Auditor</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1300px; margin: 0 auto; }
+        .card { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); padding: 25px; margin-bottom: 20px; }
+        h1, h2, h3 { color: #1f497d; margin-top: 0; }
+        .upload-box { border: 2px dashed #1f497d; border-radius: 8px; padding: 30px; text-align: center; background: #fafbfc; }
+        .btn { background: #1f497d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 15px; }
+        .btn:hover { background: #15325b; }
+        .btn-success { background: #28a745; text-decoration: none; display: inline-block; }
+        .btn-success:hover { background: #218838; }
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin: 15px 0; }
+        .stat-box { background: #eef2f7; padding: 15px; border-radius: 6px; text-align: center; }
+        .stat-box h4 { margin: 0; font-size: 13px; color: #666; }
+        .stat-box p { margin: 5px 0 0 0; font-size: 20px; font-weight: bold; color: #1f497d; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #ddd; font-size: 13px; }
+        th { background: #1f497d; color: white; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; }
+        .badge-PASS { background: #d4edda; color: #155724; }
+        .badge-FAIL { background: #f8d7da; color: #721c24; }
+        .badge-WARNING { background: #fff3cd; color: #856404; }
+        .badge-vdom { background: #e2e3e5; color: #383d41; }
+        pre { background: #272822; color: #f8f8f2; padding: 8px; border-radius: 4px; font-size: 11px; overflow-x: auto; margin: 5px 0 0 0; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h1>FortiGate Hardening Auditor</h1>
+        <p>Evaluación técnica contra <b>SEG-LNB-002 (Grupo DC)</b>, ISO 27001, NIST SP 800-53 y CIS Controls.</p>
+        
+        <form action="/audit" method="post" enctype="multipart/form-data">
+            <div class="upload-box">
+                <input type="file" name="backup_file" accept=".conf,.txt" required>
+                <button type="submit" class="btn">Iniciar Auditoría</button>
+            </div>
+        </form>
+    </div>
+
+    {% if results %}
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Resultados: {{ metadata.Hostname }}</h2>
+            <a href="/download" class="btn btn-success">Descargar Excel (5 Hojas)</a>
+        </div>
+        
+        <div class="grid-stats">
+            <div class="stat-box"><h4>Firmware</h4><p>{{ metadata.Firmware }}</p></div>
+            <div class="stat-box"><h4>VDOM(s)</h4><p style="font-size: 15px;">{{ metadata.VDOM }}</p></div>
+            <div class="stat-box"><h4>Score Global</h4><p>{{ stats.score }}%</p></div>
+            <div class="stat-box"><h4>Madurez</h4><p>{{ stats.madurez }}</p></div>
+            <div class="stat-box"><h4>PASS</h4><p style="color: #28a745;">{{ stats.pass_cnt }}</p></div>
+            <div class="stat-box"><h4>FAIL</h4><p style="color: #dc3545;">{{ stats.fail_cnt }}</p></div>
+            <div class="stat-box"><h4>WARNING</h4><p style="color: #ffc107;">{{ stats.warn_cnt }}</p></div>
+        </div>
+
+        <h3>Detalle de Hallazgos por VDOM</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Check ID</th>
+                    <th>VDOM</th>
+                    <th>Categoría</th>
+                    <th>Hallazgo</th>
+                    <th>Estado</th>
+                    <th>Severidad</th>
+                    <th>Evidencia</th>
+                    <th>Remediación CLI</th>
+                    <th>Normativa</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for chk in results %}
+                <tr>
+                    <td><b>{{ chk.id }}</b></td>
+                    <td><span class="badge badge-vdom">{{ chk.vdom }}</span></td>
+                    <td>{{ chk.cat }}</td>
+                    <td>{{ chk.hallazgo }}</td>
+                    <td><span class="badge badge-{{ chk.estado }}">{{ chk.estado }}</span></td>
+                    <td><b>{{ chk.sev }}</b></td>
+                    <td><small>{{ chk.evidencia }}</small></td>
+                    <td><pre>{{ chk.rem }}</pre></td>
+                    <td><small>{{ chk.ref }}</small></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+</body>
+</html>
